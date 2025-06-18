@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flipkart Product Reviews</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .product-header {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .review-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 5px solid #6c757d;
+        }
+        
+        .review-card.original {
+            border-left-color: #28a745;
+        }
+        
+        .review-card.generated {
+            border-left-color: #dc3545;
+        }
+        
+        .stars-container {
+            position: relative;
+            display: inline-block;
+            font-size: 1.2rem;
+        }
+        
+        .stars-background {
+            color: #e0e0e0;
+        }
+        
+        .stars-foreground {
+            color: #ffb400;
+            position: absolute;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        
+        .rating-badge {
+            background-color: #2874f0;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .review-stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            flex: 1;
+        }
+        
+        .stat-card.original {
+            border-top: 3px solid #28a745;
+        }
+        
+        .stat-card.generated {
+            border-top: 3px solid #dc3545;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .review-label {
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            color: white;
+        }
+        
+        .label-original {
+            background-color: #28a745;
+        }
+        
+        .label-generated {
+            background-color: #dc3545;
+        }
+        
+        .summary-card {
+            background-color: #e8f5e9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 5px solid #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <h1 class="mb-4 text-center">Find Product Reviews</h1>
+        
+        <form method="POST" class="mb-4">
+            <div class="row g-2">
+                <div class="col-md-9">
+                    <select name="product_name" class="form-select" required>
+                        <option value="">Select a product...</option>
+                        {% for product in product_names %}
+                            <option value="{{ product }}" {% if product == selected_product %}selected{% endif %}>
+                                {{ product }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-2"></i>Search
+                    </button>
+                </div>
+            </div>
+        </form>
+        
+        {% if selected_product %}
+        <div class="product-header">
+            <h2>{{ selected_product }}</h2>
+            <div class="d-flex align-items-center mt-2">
+                <div class="stars-container me-2">
+                    <div class="stars-background">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stars-foreground" style="width: {{ avg_rating * 20 }}%">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                <span class="rating-badge me-2">{{ avg_rating }}/5</span>
+                <span class="text-muted">{{ review_count }} reviews</span>
+            </div>
+            
+            <div class="review-stats mt-3">
+                <div class="stat-card original">
+                    <div class="stat-value">{{ original_count }}</div>
+                    <div>Original Reviews</div>
+                </div>
+                <div class="stat-card generated">
+                    <div class="stat-value">{{ generated_count }}</div>
+                    <div>Computer Generated</div>
+                </div>
+            </div>
+        </div>
+        
+        {% if original_summary %}
+        <div class="summary-card">
+            <h3>Summary of Original Reviews</h3>
+            <p>{{ original_summary }}</p>
+        </div>
+        {% endif %}
+        
+        <h3 class="mb-3">Customer Reviews</h3>
+        
+        {% for review in reviews %}
+        <div class="review-card {{ review.class }}">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <div class="stars-container">
+                    <div class="stars-background">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stars-foreground" style="width: {{ review.rate * 20 }}%">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <span class="ms-2">{{ review.rate }}/5</span>
+                </div>
+                <span class="review-label {% if review.class == 'original' %}label-original{% else %}label-generated{% endif %}">
+                    {{ review.type }} ({{ review.confidence }})
+                </span>
+            </div>
+            <p class="mb-0">{{ review.text }}</p>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
